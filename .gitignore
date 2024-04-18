@@ -87,3 +87,5 @@ src/aws-cpp-sdk-core/include/aws/core/SDKConfig.h
 
 #nuget
 *.nupkg
+install
+*.pcap
