@@ -1,4 +1,5 @@
-
+set -e
+set -x
 
 BUILD_DIR=$(realpath ./build)
 
