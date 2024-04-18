@@ -5,7 +5,7 @@
 cmake_minimum_required(VERSION 3.13)
 
 set(SERVICE_NAME sts)
-set(SERVICE_COMPONENTS sts)
+set(SERVICE_COMPONENTS sts s3-crt)
 
 # Set this project's name.
 project("${SERVICE_NAME}-examples")
