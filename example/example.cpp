@@ -1,7 +1,10 @@
 #include <aws/sts/STSClient.h>
 #include <aws/sts/model/GetCallerIdentityRequest.h>
 #include <aws/core/auth/AWSCredentialsProvider.h>
+#include <aws/core/Globals.h>
 #include <iostream>
+
+#include <aws/s3-crt/S3CrtClient.h>
 
 #include "example.h"
 
@@ -42,8 +45,17 @@ bool AwsDoc::STS::getCallerIdentity(const Aws::Client::ClientConfiguration &clie
 int main(int argc, char **argv)
 {
     Aws::SDKOptions options;
+    options.ioOptions.tlsConnectionOptions_create_fn = []() {
+        Aws::Crt::Io::TlsContextOptions tlsCtxOptions = Aws::Crt::Io::TlsContextOptions::InitDefaultClient();
+        tlsCtxOptions.SetTlsCipherPreference(AWS_IO_TLS_CIPHER_PREF_PQ_TLSv1_0_2021_05);
+        Aws::Crt::Io::TlsContext tlsContext(tlsCtxOptions, Aws::Crt::Io::TlsMode::CLIENT);
+        auto tlsConnectionOptions = Aws::MakeShared<Aws::Crt::Io::TlsConnectionOptions>("PQ TESTING", tlsContext.NewConnectionOptions());
+        Aws::SetDefaultTlsConnectionOptions(tlsConnectionOptions);
+        return tlsConnectionOptions;
+    };
     options.loggingOptions.logLevel = Aws::Utils::Logging::LogLevel::Trace;
     Aws::InitAPI(options);
+
     {
         Aws::Client::ClientConfiguration clientConfig;
         // Optional: Set to the AWS Region in which the bucket was created (overrides config file).
@@ -53,6 +65,31 @@ int main(int argc, char **argv)
             return 1;
         }
     }
+
+    Aws::Crt::Io::TlsContextOptions tlsCtxOptions = Aws::Crt::Io::TlsContextOptions::InitDefaultClient();
+    tlsCtxOptions.SetTlsCipherPreference(AWS_IO_TLS_CIPHER_PREF_PQ_TLSv1_0_2021_05);
+    Aws::Crt::Io::TlsContext tlsContext(tlsCtxOptions, Aws::Crt::Io::TlsMode::CLIENT);
+    auto tlsConnectionOptions = Aws::MakeShared<Aws::Crt::Io::TlsConnectionOptions>("PQ TESTING", tlsContext.NewConnectionOptions());
+
+    Aws::S3Crt::ClientConfiguration s3Config;
+    s3Config.tlsConnectionOptions = tlsConnectionOptions;
+    s3Config.region = Aws::Region::US_EAST_1;
+    s3Config.throughputTargetGbps = 5;
+    s3Config.partSize = 8*1024*1024;
+
+    Aws::S3Crt::S3CrtClient s3CrtClient(s3Config);
+    Aws::S3Crt::Model::ListBucketsOutcome outcome = s3CrtClient.ListBuckets();
+    if (outcome.IsSuccess()) {
+        std::cout << "All buckets under my account:" << std::endl;
+        for (auto const& bucket : outcome.GetResult().GetBuckets()) {
+            std::cout << bucket.GetName() << std::endl;
+        }
+    }
+    else {
+        std::cout << "ListBuckets error:\n"<< outcome.GetError() << std::endl << std::endl;
+        return 1;
+    }
+
     Aws::ShutdownAPI(options);
     return 0;
 }
