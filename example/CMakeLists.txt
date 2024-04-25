@@ -13,6 +13,9 @@ project("${SERVICE_NAME}-examples")
 # Set the C++ standard to use to build this target.
 set(CMAKE_CXX_STANDARD 11)
 
+# Debug build for symbols and other things
+set(CMAKE_BUILD_TYPE Debug)
+
 # Build shared libraries by default.
 set(BUILD_SHARED_LIBS ON)
 
