@@ -45,13 +45,14 @@ bool AwsDoc::STS::getCallerIdentity(const Aws::Client::ClientConfiguration &clie
 int main(int argc, char **argv)
 {
     Aws::SDKOptions options;
+
     options.ioOptions.tlsConnectionOptions_create_fn = []() {
+        std::cout << "!! CALLBACK tlsConnectionOptions_create_fn CALLED !!" << std::endl;
         Aws::Crt::Io::TlsContextOptions tlsCtxOptions = Aws::Crt::Io::TlsContextOptions::InitDefaultClient();
         tlsCtxOptions.SetTlsCipherPreference(AWS_IO_TLS_CIPHER_PREF_PQ_TLSv1_0_2021_05);
+        tlsCtxOptions.SetMinimumTlsVersion(AWS_IO_TLSv1_3);
         Aws::Crt::Io::TlsContext tlsContext(tlsCtxOptions, Aws::Crt::Io::TlsMode::CLIENT);
-        auto tlsConnectionOptions = Aws::MakeShared<Aws::Crt::Io::TlsConnectionOptions>("PQ TESTING", tlsContext.NewConnectionOptions());
-        Aws::SetDefaultTlsConnectionOptions(tlsConnectionOptions);
-        return tlsConnectionOptions;
+        return Aws::MakeShared<Aws::Crt::Io::TlsConnectionOptions>("PQ TESTING", tlsContext.NewConnectionOptions());
     };
     options.loggingOptions.logLevel = Aws::Utils::Logging::LogLevel::Trace;
     Aws::InitAPI(options);
@@ -66,8 +67,13 @@ int main(int argc, char **argv)
         }
     }
 
+
     Aws::Crt::Io::TlsContextOptions tlsCtxOptions = Aws::Crt::Io::TlsContextOptions::InitDefaultClient();
     tlsCtxOptions.SetTlsCipherPreference(AWS_IO_TLS_CIPHER_PREF_PQ_TLSv1_0_2021_05);
+    tlsCtxOptions.SetMinimumTlsVersion(AWS_IO_TLSv1_3);
+    Aws::Crt::ByteCursor badPath = Aws::Crt::ByteCursorFromCString("t0t@lLy_NoN_éXi$t@Nt_PaTh");
+    tlsCtxOptions.SetKeychainPath(badPath);
+    tlsCtxOptions.OverrideDefaultTrustStore(badPath);
     Aws::Crt::Io::TlsContext tlsContext(tlsCtxOptions, Aws::Crt::Io::TlsMode::CLIENT);
     auto tlsConnectionOptions = Aws::MakeShared<Aws::Crt::Io::TlsConnectionOptions>("PQ TESTING", tlsContext.NewConnectionOptions());
 
