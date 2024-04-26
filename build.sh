@@ -1,4 +1,6 @@
+#!/bin/bash
 
+set -ex
 
 BUILD_DIR=$(realpath ./build)
 INSTALL_DIR=$(realpath ./install)
