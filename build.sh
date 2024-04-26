@@ -7,6 +7,8 @@ mkdir -p $BUILD_DIR
 
 pushd $BUILD_DIR
 
+git submodule update --init --recursive
+
 cmake \
     -DCMAKE_BUILD_TYPE=Debug \
     -DCMAKE_PREFIX_PATH=$INSTALL_DIR \
