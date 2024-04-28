@@ -163,6 +163,7 @@ namespace Aws
             }
 
             tlsContextOptions.SetVerifyPeer(m_configuration.verifySSL);
+            tlsContextOptions.SetTlsCipherPreference(AWS_IO_TLS_CIPHER_PREF_PQ_TLSv1_0_2021_05);
             
             if (Crt::Io::TlsContextOptions::IsAlpnSupported())
             {
